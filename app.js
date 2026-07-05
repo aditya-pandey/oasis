@@ -1305,10 +1305,10 @@ function renderResumes() {
     }
 
     list.innerHTML += `
-      <div class="panel" style="display: grid; grid-template-columns: 1fr auto; padding: 16px 20px; align-items: center; gap: 16px; border-radius: var(--border-radius-md); background-color: var(--bg-panel); border: 1px solid var(--border-color);">
+      <div class="resume-card">
         <div>
-          <input type="text" class="input-flat" value="${res.name}" onchange="updateResumeField('${res.id}', 'name', this.value)" style="font-weight: 700; font-size: 15px; padding: 4px; border-radius: 4px;" />
-          <div class="resume-meta-fields" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: 12px; align-items: center;">
+          <input type="text" class="input-flat" value="${res.name}" onchange="updateResumeField('${res.id}', 'name', this.value)" style="font-weight: 700; font-size: 15px; padding: 4px; border-radius: 4px; width: 100%;" />
+          <div class="resume-card-meta">
             <span class="text-secondary" style="font-weight: 500;">Target:</span>
             <input type="text" class="input-flat" value="${res.target}" onchange="updateResumeField('${res.id}', 'target', this.value)" style="padding: 2px 4px; width: 180px; border-radius: 4px;" />
             <span class="text-secondary" style="font-weight: 500;">Link:</span>
@@ -1321,7 +1321,7 @@ function renderResumes() {
             </button>
           </div>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="resume-card-actions">
           ${res.url ? `
             <a href="${res.url}" target="_blank" class="btn btn-secondary btn-icon" title="Open / View Link" style="padding: 8px; display: inline-flex; align-items: center; justify-content: center;">
               <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
