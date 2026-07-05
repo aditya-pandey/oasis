@@ -923,23 +923,54 @@ body {
 
 /* Inputs */
 .input-flat {
-  background: transparent;
-  border: 1px solid transparent;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
   width: 100%;
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: var(--border-radius-sm);
   transition: all 0.15s ease;
   color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
 }
 
 .input-flat:hover {
-  background-color: var(--bg-panel-hover);
+  border-color: var(--text-secondary);
 }
 
 .input-flat:focus {
-  background-color: var(--bg-panel);
+  background-color: var(--bg-sidebar);
   border-color: var(--accent);
   outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+/* Minimal Actions Buttons */
+.btn-minimal {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.15s ease;
+}
+
+.btn-minimal:hover {
+  background-color: var(--bg-panel-hover);
+  color: var(--text-primary);
+}
+
+.btn-minimal.danger {
+  color: var(--danger);
+}
+
+.btn-minimal.danger:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
 }
 
 .company-title {

@@ -11,91 +11,9 @@ let state = {
 const DEMO_DATA = {
   theme: 'dark',
   columns: ['Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected'],
-  applications: [
-    {
-      id: 'demo-stripe',
-      company: 'Stripe',
-      role: 'Software Engineer',
-      stage: 'Interview',
-      priority: 5,
-      source: 'LinkedIn',
-      location: 'Remote',
-      salary: '22 LPA',
-      link: 'https://stripe.com/jobs',
-      resume: 'Resume_V2_Stripe',
-      notes: 'Need to revise Graphs.\nManager asked about Redis.\n\nSalary discussed:\n20-24 LPA.\nVery positive interview.',
-      contacts: [
-        { id: 'c1', name: 'Rahul Sharma', email: 'rahul@stripe.com', phone: '+919999988888', linkedin: 'https://linkedin.com/in/rahul', notes: 'Recruiter, very responsive' }
-      ],
-      timeline: [
-        { id: 't1', date: '2026-06-28', text: 'Applied to Stripe' },
-        { id: 't2', date: '2026-06-30', text: 'Recruiter reached out' },
-        { id: 't3', date: '2026-07-02', text: 'HR Round completed' },
-        { id: 't4', date: '2026-07-05', text: 'Technical Round scheduled' }
-      ],
-      lastUpdated: '2026-07-05T18:00:00.000Z'
-    },
-    {
-      id: 'demo-google',
-      company: 'Google',
-      role: 'Frontend Engineer',
-      stage: 'Interview',
-      priority: 4,
-      source: 'Referral',
-      location: 'Bangalore, India',
-      salary: '32 LPA',
-      link: 'https://careers.google.com',
-      resume: 'Resume_V2_Google',
-      notes: 'Focus on System Design and performance optimization details.',
-      contacts: [],
-      timeline: [
-        { id: 'tg1', date: '2026-06-25', text: 'Applied' },
-        { id: 'tg2', date: '2026-07-01', text: 'Screening passed. Moved Google to Round 2.' }
-      ],
-      lastUpdated: '2026-07-01T10:00:00.000Z'
-    },
-    {
-      id: 'demo-atlassian',
-      company: 'Atlassian',
-      role: 'Product Engineer',
-      stage: 'Applied',
-      priority: 4,
-      source: 'Direct',
-      location: 'Remote',
-      salary: '25 LPA',
-      link: 'https://atlassian.com/careers',
-      resume: 'Resume_V2_Product',
-      notes: 'Awaiting response. Applied 8 days ago.',
-      contacts: [],
-      timeline: [
-        { id: 'ta1', date: '2026-06-28', text: 'Applied to Atlassian' }
-      ],
-      lastUpdated: '2026-06-28T09:00:00.000Z'
-    },
-    {
-      id: 'demo-nvidia',
-      company: 'NVIDIA',
-      role: 'Deep Learning Engineer',
-      stage: 'Wishlist',
-      priority: 5,
-      source: 'LinkedIn',
-      location: 'Santa Clara, CA',
-      salary: '$180k',
-      link: 'https://nvidia.com/careers',
-      resume: 'Resume_AI_Specialist',
-      notes: 'Prepare draft application.',
-      contacts: [],
-      timeline: [
-        { id: 'tn1', date: '2026-07-06', text: 'Added draft' }
-      ],
-      lastUpdated: '2026-07-06T00:00:00.000Z'
-    }
-  ],
-  activities: [
-    { id: 'act1', text: 'Applied to Stripe', date: '2026-06-28T08:00:00.000Z' },
-    { id: 'act2', text: 'Moved Google to Round 2', date: '2026-07-01T10:00:00.000Z' },
-    { id: 'act3', text: 'Reminder: Follow up with Atlassian', date: '2026-07-06T00:00:00.000Z' }
-  ]
+  applications: [],
+  activities: [],
+  resumes: []
 };
 
 // Supabase Global Client Reference
@@ -303,10 +221,15 @@ function loadState() {
       if (!state.columns) state.columns = DEMO_DATA.columns;
       if (!state.applications) state.applications = [];
       if (!state.activities) state.activities = [];
+      
+      // Clean up old demo applications and activities automatically
+      state.applications = state.applications.filter(a => !a.id.startsWith('demo-'));
+      state.activities = state.activities.filter(act => !act.id.startsWith('act'));
+
       if (!state.resumes) {
         state.resumes = [
-          { id: 'res-default-1', name: 'Software Engineer Resume', target: 'Full Stack roles', url: 'https://drive.google.com/file/d/1example1/view' },
-          { id: 'res-default-2', name: 'Frontend Developer CV', target: 'React/UI roles', url: 'https://drive.google.com/file/d/1example2/view' }
+          { id: 'res-default-1', name: 'Martech Consultant Resume', target: 'Marketing Tech roles', url: 'https://drive.google.com/file/d/1example1/view' },
+          { id: 'res-default-2', name: 'Marketing Analytics CV', target: 'Analytics roles', url: 'https://drive.google.com/file/d/1example2/view' }
         ];
       }
     } catch (e) {
@@ -314,10 +237,10 @@ function loadState() {
     }
   } else {
     state = DEMO_DATA;
-    if (!state.resumes) {
+    if (!state.resumes || state.resumes.length === 0) {
       state.resumes = [
-        { id: 'res-default-1', name: 'Software Engineer Resume', target: 'Full Stack roles', url: 'https://drive.google.com/file/d/1example1/view' },
-        { id: 'res-default-2', name: 'Frontend Developer CV', target: 'React/UI roles', url: 'https://drive.google.com/file/d/1example2/view' }
+        { id: 'res-default-1', name: 'Martech Consultant Resume', target: 'Marketing Tech roles', url: 'https://drive.google.com/file/d/1example1/view' },
+        { id: 'res-default-2', name: 'Marketing Analytics CV', target: 'Analytics roles', url: 'https://drive.google.com/file/d/1example2/view' }
       ];
     }
     saveState();
@@ -429,7 +352,7 @@ function setupEventListeners() {
     const newApp = {
       id: 'app-' + Date.now(),
       company: 'New Company',
-      role: 'Software Engineer',
+      role: 'Martech Consultant',
       stage: state.columns[0] || 'Wishlist',
       priority: 3,
       source: '',
