@@ -1025,8 +1025,9 @@ function renderDrawerContacts(app) {
 
   app.contacts.forEach((contact, idx) => {
     list.innerHTML += `
-      <div class="contact-card">
-        <button class="btn-delete-contact" onclick="deleteContact('${app.id}', '${contact.id}')">Delete</button>
+        <button class="btn-delete-contact" onclick="deleteContact('${app.id}', '${contact.id}')" title="Delete Contact">
+          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        </button>
         <div class="contact-row">
           <span class="contact-label">Name</span>
           <input type="text" class="input-flat" value="${contact.name}" onchange="updateContact('${app.id}', '${contact.id}', 'name', this.value)" />
@@ -1046,6 +1047,7 @@ function renderDrawerContacts(app) {
       </div>
     `;
   });
+  lucide.createIcons();
 }
 
 window.updateContact = function(appId, contactId, field, value) {
