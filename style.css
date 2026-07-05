@@ -1516,6 +1516,14 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
+  
+  #btn-mobile-settings {
+    display: inline-flex !important;
+  }
+}
+
+#btn-mobile-settings {
+  display: none;
 }
 
 /* Modal Dialogs general styling */

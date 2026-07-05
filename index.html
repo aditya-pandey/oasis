@@ -97,10 +97,13 @@
             <kbd class="search-kbd">⌘K</kbd>
           </div>
         </div>
-        <div class="header-right">
+        <div class="header-right" style="display: flex; gap: 8px; align-items: center;">
           <button class="btn btn-primary" id="btn-new-app">
             <i data-lucide="plus"></i>
             <span>New Application</span>
+          </button>
+          <button class="btn-minimal" id="btn-mobile-settings" title="Settings" style="display: none; align-items: center; justify-content: center; padding: 10px;">
+            <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
           </button>
         </div>
       </header>
@@ -488,6 +491,29 @@ alter table resumes disable row level security;</pre>
       <button class="btn btn-secondary" id="btn-cloud-disconnect" style="margin-right: auto; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);">Disconnect</button>
       <button class="btn btn-secondary" id="btn-cloud-cancel">Cancel</button>
       <button class="btn btn-primary" id="btn-cloud-save">Save & Connect</button>
+    </div>
+  </div>
+
+  <!-- Mobile Settings Modal -->
+  <div class="modal-overlay" id="mobile-settings-overlay"></div>
+  <div class="modal-dialog" id="mobile-settings-modal">
+    <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h2 class="heading-lg" style="display: flex; align-items: center; gap: 10px;"><i data-lucide="settings"></i> Settings</h2>
+      <button class="btn-icon" id="mobile-settings-close" aria-label="Close settings"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+      <button class="btn btn-secondary" id="mobile-theme-toggle" style="width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 16px;">
+        <i data-lucide="sun"></i> Toggle Theme
+      </button>
+      <button class="btn btn-secondary" id="mobile-cloud-settings" style="width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 16px;">
+        <i data-lucide="cloud"></i> Cloud Sync Settings
+      </button>
+      <button class="btn btn-secondary" id="mobile-export-btn" style="width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 16px;">
+        <i data-lucide="download"></i> Export Backup
+      </button>
+      <button class="btn btn-secondary" id="mobile-import-btn" style="width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 16px;">
+        <i data-lucide="upload"></i> Import Backup
+      </button>
     </div>
   </div>
 

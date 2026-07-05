@@ -623,6 +623,41 @@ function setupEventListeners() {
     saveState();
     renderResumes();
   });
+
+  // Mobile Settings Event Listeners
+  const openMobileSettings = () => {
+    document.getElementById('mobile-settings-overlay').classList.add('active');
+    document.getElementById('mobile-settings-modal').classList.add('active');
+  };
+  const closeMobileSettings = () => {
+    document.getElementById('mobile-settings-overlay').classList.remove('active');
+    document.getElementById('mobile-settings-modal').classList.remove('active');
+  };
+
+  document.getElementById('btn-mobile-settings').addEventListener('click', openMobileSettings);
+  document.getElementById('mobile-settings-close').addEventListener('click', closeMobileSettings);
+  document.getElementById('mobile-settings-overlay').addEventListener('click', closeMobileSettings);
+
+  document.getElementById('mobile-theme-toggle').addEventListener('click', () => {
+    toggleTheme();
+    closeMobileSettings();
+  });
+
+  document.getElementById('mobile-cloud-settings').addEventListener('click', () => {
+    closeMobileSettings();
+    document.getElementById('cloud-modal-overlay').classList.add('active');
+    document.getElementById('cloud-sync-modal').classList.add('active');
+  });
+
+  document.getElementById('mobile-export-btn').addEventListener('click', () => {
+    closeMobileSettings();
+    document.getElementById('export-btn').click();
+  });
+
+  document.getElementById('mobile-import-btn').addEventListener('click', () => {
+    closeMobileSettings();
+    document.getElementById('import-btn').click();
+  });
 }
 
 // Activity Feed Logger
