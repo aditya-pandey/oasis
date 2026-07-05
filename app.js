@@ -83,6 +83,17 @@ async function syncWithCloud() {
   if (!supabaseClient) return;
   try {
     updateSyncStatus('syncing', 'Syncing...');
+
+    // 0. Run queued deletions if any exist
+    if (state.deletedIds && state.deletedIds.length > 0) {
+      try {
+        await supabaseClient.from('applications').delete().in('id', state.deletedIds);
+        state.deletedIds = [];
+        localStorage.setItem('oasis_track_state', JSON.stringify(state));
+      } catch (err) {
+        console.error('Failed to flush queued deletions:', err);
+      }
+    }
     
     const { data: supaApps, error: appsError } = await supabaseClient.from('applications').select('*');
     const { data: supaActivities, error: actsError } = await supabaseClient.from('activities').select('*');
@@ -108,6 +119,9 @@ async function syncWithCloud() {
     
     if (supaApps) {
       supaApps.forEach(sApp => {
+        // Skip items currently in deletion queue
+        if (state.deletedIds && state.deletedIds.includes(sApp.id)) return;
+
         try {
           if (typeof sApp.contacts === 'string') sApp.contacts = JSON.parse(sApp.contacts);
           if (typeof sApp.timeline === 'string') sApp.timeline = JSON.parse(sApp.timeline);
@@ -206,6 +220,7 @@ async function syncWithCloud() {
 document.addEventListener('DOMContentLoaded', () => {
   loadState();
   initSupabase();
+  setupEventListeners();
   initApp();
   if (supabaseClient) {
     syncWithCloud();
@@ -300,7 +315,6 @@ function initApp() {
   renderList();
   renderResumes();
   renderStats();
-  setupEventListeners();
   lucide.createIcons();
 }
 
@@ -387,12 +401,31 @@ function setupEventListeners() {
   document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
 
   // Delete App button
-  document.getElementById('btn-delete-app').addEventListener('click', () => {
+  document.getElementById('btn-delete-app').addEventListener('click', async () => {
     const appId = document.getElementById('job-drawer').getAttribute('data-app-id');
     if (appId && confirm('Are you sure you want to delete this application?')) {
       const app = state.applications.find(a => a.id === appId);
+      
+      // Filter out application locally
       state.applications = state.applications.filter(a => a.id !== appId);
+      
+      // Track deleted ID to prevent pulling it back from cloud
+      if (!state.deletedIds) state.deletedIds = [];
+      state.deletedIds.push(appId);
+      
       addActivity(`Deleted Application for ${app ? app.company : 'unknown'}`);
+      
+      // Delete from Supabase immediately if connected
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('applications').delete().eq('id', appId);
+          // Remove from queue on success
+          state.deletedIds = state.deletedIds.filter(id => id !== appId);
+        } catch (err) {
+          console.error('Failed to delete app from Supabase:', err);
+        }
+      }
+      
       saveState();
       closeDrawer();
       initApp();
@@ -787,7 +820,7 @@ function drop(e, stageName) {
 }
 
 // Column settings: Rename / Delete
-function renameColumn(oldName, newName) {
+window.renameColumn = function(oldName, newName) {
   newName = newName.trim();
   if (!newName || newName === oldName) return;
   
@@ -802,8 +835,8 @@ function renameColumn(oldName, newName) {
   }
 }
 
-function deleteColumn(colName) {
-  if (confirm(`Are you sure you want to delete stage "${colName}"? Applications in this stage will be kept and moved to the wishlist stage.`)) {
+window.deleteColumn = function(colName) {
+  if (confirm(`Are you sure you want to delete stage "${colName}"? Applications in this stage will be kept and moved to the first stage.`)) {
     state.columns = state.columns.filter(c => c !== colName);
     const targetStage = state.columns[0] || 'Wishlist';
     state.applications.forEach(app => {

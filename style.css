@@ -373,9 +373,20 @@ body {
   height: 100%;
 }
 
+@keyframes appleFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .tab-content.active {
   display: block;
-  animation: fadeIn 0.2s ease;
+  animation: appleFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Dashboard Content Grid */
@@ -537,6 +548,7 @@ body {
   border-radius: var(--border-radius-lg);
   display: flex;
   flex-direction: column;
+  min-height: 450px;
   max-height: calc(100vh - 240px);
   box-shadow: var(--panel-shadow);
 }
@@ -547,6 +559,32 @@ body {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.column-menu-btn {
+  opacity: 0;
+  pointer-events: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--border-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.column-menu-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.kanban-column-header:hover .column-menu-btn {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .column-title {
@@ -575,6 +613,7 @@ body {
   gap: 10px;
   overflow-y: auto;
   flex-grow: 1;
+  min-height: 380px;
 }
 
 .kanban-card {
@@ -876,7 +915,7 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 100;
+  z-index: 900;
 }
 
 .drawer-overlay.active {
@@ -894,7 +933,7 @@ body {
   border-left: 1px solid var(--border-color);
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 101;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
 }
@@ -1580,5 +1619,27 @@ body {
     margin-top: 4px;
   }
 }
+
+/* Apple-style springy click scale-down effects */
+.btn,
+.btn-minimal,
+.toggle-btn,
+.nav-item,
+.btn-delete-contact,
+.focus-item,
+.stat-card,
+.gauge-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn:active,
+.btn-minimal:active,
+.toggle-btn:active,
+.nav-item:active,
+.btn-delete-contact:active,
+.focus-item:active {
+  transform: scale(0.95) !important;
+}
+
 
 
