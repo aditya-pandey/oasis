@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oasis | Job Search Sanctuary</title>
+  <meta name="description" content="A premium, lightning-fast job application tracker. Find peace in your job search.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f5bf6' stroke-width='2'%3E%3Cpath d='M12 2L2 22h20L12 2z'/%3E%3C/svg%3E">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Supabase client JS SDK -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#09090b">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="compass"></i>
+        </div>
+        <span class="brand-name">Oasis</span>
+      </div>
+      
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="board">
+          <i data-lucide="kanban-square"></i>
+          <span>Applications</span>
+        </button>
+        <button class="nav-item" data-tab="resumes">
+          <i data-lucide="file-text"></i>
+          <span>Resumes</span>
+        </button>
+        <button class="nav-item" data-tab="stats">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Statistics</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="focus-section">
+        <div class="focus-header">
+          <span class="section-title">Today's Focus</span>
+          <span class="badge focus-count" id="focus-count">0</span>
+        </div>
+        <div id="focus-list" class="focus-list">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="sidebar-footer">
+        <button id="theme-toggle" class="footer-btn" title="Toggle Theme">
+          <i data-lucide="sun" id="theme-icon"></i>
+          <span>Theme</span>
+        </button>
+        <button id="btn-cloud-settings" class="footer-btn" title="Cloud Sync Settings">
+          <i data-lucide="cloud" id="cloud-icon"></i>
+          <span>Cloud Sync</span>
+        </button>
+        <button id="export-btn" class="footer-btn" title="Export Data">
+          <i data-lucide="download"></i>
+          <span>Export</span>
+        </button>
+        <button id="import-btn" class="footer-btn" title="Import Data">
+          <i data-lucide="upload"></i>
+          <span>Import</span>
+        </button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation & Search -->
+      <header class="header">
+        <div class="header-left">
+          <div class="search-container">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="global-search" placeholder="Search anything (e.g. Stripe, Remote, Rahul)..." autocomplete="off">
+            <kbd class="search-kbd">⌘K</kbd>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-primary" id="btn-new-app">
+            <i data-lucide="plus"></i>
+            <span>New Application</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="content-body">
+        
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="tab-content active">
+          <div class="welcome-header">
+            <h1 class="heading-xl">👋 Good morning, Aditya</h1>
+            <p class="subtitle">Here is the state of your job hunt today.</p>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-title">Active Applications</span>
+              <span class="stat-value" id="stat-active">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">Interviews Scheduled</span>
+              <span class="stat-value" id="stat-interviews">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">Follow-ups Due</span>
+              <span class="stat-value text-warning" id="stat-followups">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">Offers Received</span>
+              <span class="stat-value text-success" id="stat-offers">0</span>
+            </div>
+          </div>
+
+          <!-- Main Dashboard Split -->
+          <div class="dashboard-split">
+            <!-- Left Side: Weekly Progress Chart -->
+            <div class="panel">
+              <h2 class="panel-title">
+                <i data-lucide="trending-up"></i> Weekly Progress
+              </h2>
+              <div class="chart-wrapper" style="height: 200px;">
+                <svg id="dashboard-chart" class="svg-chart" viewBox="0 0 600 220">
+                  <!-- Generated dynamically via JS -->
+                </svg>
+              </div>
+            </div>
+
+            <!-- Right Side: Focus Summary -->
+            <div class="panel">
+              <h2 class="panel-title">
+                <i data-lucide="target"></i> Focus Summary
+              </h2>
+              <div id="dashboard-focus" class="focus-summary-container">
+                <!-- Populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- APPLICATIONS BOARD / LIST TAB -->
+        <section id="tab-board" class="tab-content">
+          <div class="board-header">
+            <div class="board-title-group">
+              <h1 class="heading-lg">Applications</h1>
+              <div class="view-toggle">
+                <button class="toggle-btn active" data-view="kanban">Kanban</button>
+                <button class="toggle-btn" data-view="list">List</button>
+              </div>
+            </div>
+            <div class="board-actions">
+              <button class="btn btn-secondary" id="btn-add-column">
+                <i data-lucide="plus-circle"></i> Add Stage
+              </button>
+            </div>
+          </div>
+
+          <!-- Kanban View Container -->
+          <div id="kanban-view" class="kanban-board">
+            <!-- Column templates generated dynamically -->
+          </div>
+
+          <!-- List View Container (Hidden by default) -->
+          <div id="list-view" class="list-view-container" style="display: none;">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Stage</th>
+                  <th>Priority</th>
+                  <th>Location</th>
+                  <th>Salary</th>
+                  <th>Last Updated</th>
+                </tr>
+              </thead>
+              <tbody id="list-table-body">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- STATISTICS TAB -->
+        <section id="tab-stats" class="tab-content">
+          <div class="stats-header">
+            <h1 class="heading-lg">Sanctuary Analytics</h1>
+            <p class="subtitle">A clear reflection of your application momentum and response performance.</p>
+          </div>
+          
+          <div class="stats-overview-grid">
+            <!-- Left Side: Main Charts & Funnel -->
+            <div class="stats-main-col">
+              <div class="panel chart-panel">
+                <h2 class="panel-title"><i data-lucide="trending-up"></i> Weekly Momentum</h2>
+                <div class="chart-wrapper">
+                  <svg id="weekly-chart" class="svg-chart" viewBox="0 0 600 220">
+                    <!-- Generated dynamically via JS -->
+                  </svg>
+                </div>
+              </div>
+              
+              <div class="panel funnel-panel">
+                <h2 class="panel-title"><i data-lucide="layers"></i> Stage Distribution</h2>
+                <div id="funnel-distribution" class="funnel-container">
+                  <!-- Dynamically populated progress bars -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right Side: Success Metrics & Gauges -->
+            <div class="stats-side-col">
+              <div class="panel gauges-panel">
+                <h2 class="panel-title"><i data-lucide="percent"></i> Conversion Rates</h2>
+                <div class="gauges-container">
+                  <div class="gauge-card">
+                    <div class="gauge-circle" id="gauge-response" style="--percent: 0;">
+                      <svg class="gauge-svg" viewBox="0 0 80 80">
+                        <circle class="gauge-bg" cx="40" cy="40" r="34"></circle>
+                        <circle class="gauge-fill" id="fill-response" cx="40" cy="40" r="34" style="stroke-dasharray: 213; stroke-dashoffset: 213;"></circle>
+                      </svg>
+                      <div class="gauge-value" id="val-response">0%</div>
+                    </div>
+                    <span class="gauge-label">Response Rate</span>
+                  </div>
+                  <div class="gauge-card">
+                    <div class="gauge-circle" id="gauge-offer" style="--percent: 0;">
+                      <svg class="gauge-svg" viewBox="0 0 80 80">
+                        <circle class="gauge-bg" cx="40" cy="40" r="34"></circle>
+                        <circle class="gauge-fill" id="fill-offer" cx="40" cy="40" r="34" style="stroke-dasharray: 213; stroke-dashoffset: 213;"></circle>
+                      </svg>
+                      <div class="gauge-value" id="val-offer">0%</div>
+                    </div>
+                    <span class="gauge-label">Offer Rate</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="panel metric-list-panel">
+                <h2 class="panel-title"><i data-lucide="activity"></i> Health Indicators</h2>
+                <div class="metric-list">
+                  <div class="metric-row">
+                    <span class="metric-label">Applications Sent</span>
+                    <span class="metric-value-badge" id="badge-total">0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Interviews Run</span>
+                    <span class="metric-value-badge" id="badge-interviews">0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Offers Received</span>
+                    <span class="metric-value-badge success" id="badge-offers">0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Ghosted Applications</span>
+                    <span class="metric-value-badge warning" id="badge-ghosted">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RESUMES TAB -->
+        <section id="tab-resumes" class="tab-content">
+          <div class="board-header" style="margin-bottom: 24px;">
+            <div class="board-title-group">
+              <h1 class="heading-lg">Resume Bank</h1>
+              <p class="subtitle" style="margin-left: 12px; margin-bottom: 0;">Store and manage Google Drive links for your role-specific resumes.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-add-resume">
+              <i data-lucide="plus"></i> Add Resume
+            </button>
+          </div>
+          
+          <div class="resumes-list-container" id="resumes-list" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Side Drawer details panel -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+    <aside class="drawer" id="job-drawer">
+      <div class="drawer-header">
+        <button class="btn-icon" id="drawer-close" aria-label="Close details">
+          <i data-lucide="x"></i>
+        </button>
+        <div class="drawer-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-delete-app">
+            <i data-lucide="trash-2"></i> Delete
+          </button>
+        </div>
+      </div>
+
+      <div class="drawer-body" id="drawer-content">
+        <!-- Inside drawer, interactive elements edit states dynamically (autosave) -->
+        <div class="drawer-section main-info">
+          <input type="text" id="edit-company" class="input-flat company-title" placeholder="Company Name" />
+          <input type="text" id="edit-role" class="input-flat role-title" placeholder="Software Engineer" />
+        </div>
+
+        <div class="drawer-fields-grid">
+          <div class="field-label">Stage</div>
+          <div class="field-value">
+            <select id="edit-stage" class="input-select">
+              <!-- Dynamically populated stages -->
+            </select>
+          </div>
+
+          <div class="field-label">Priority</div>
+          <div class="field-value">
+            <div class="rating-stars" id="edit-priority">
+              <span data-star="1"><i data-lucide="star"></i></span>
+              <span data-star="2"><i data-lucide="star"></i></span>
+              <span data-star="3"><i data-lucide="star"></i></span>
+              <span data-star="4"><i data-lucide="star"></i></span>
+              <span data-star="5"><i data-lucide="star"></i></span>
+            </div>
+          </div>
+
+          <div class="field-label">Source</div>
+          <div class="field-value">
+            <input type="text" id="edit-source" class="input-flat" placeholder="e.g. LinkedIn" />
+          </div>
+
+          <div class="field-label">Location</div>
+          <div class="field-value">
+            <input type="text" id="edit-location" class="input-flat" placeholder="Remote, New York, etc." />
+          </div>
+
+          <div class="field-label">Salary</div>
+          <div class="field-value">
+            <input type="text" id="edit-salary" class="input-flat" placeholder="e.g. 20 LPA, $120k" />
+          </div>
+
+          <div class="field-label">Job Link</div>
+          <div class="field-value">
+            <input type="url" id="edit-link" class="input-flat" placeholder="https://..." />
+          </div>
+
+          <div class="field-label">Resume Used</div>
+          <div class="field-value" style="display: flex; gap: 8px; align-items: center;">
+            <select id="edit-resume" class="input-select">
+              <!-- Dynamically populated options -->
+            </select>
+            <a href="#" id="link-view-resume" target="_blank" class="btn btn-secondary btn-icon" title="Open Resume Link" style="display: none; padding: 6px; flex-shrink: 0; align-items: center; justify-content: center;">
+              <i data-lucide="external-link" style="width: 14px; height: 14px; margin-top: 2px;"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="drawer-tabs">
+          <button class="drawer-tab-btn active" data-drawer-tab="timeline">Timeline</button>
+          <button class="drawer-tab-btn" data-drawer-tab="contacts">HR Contacts</button>
+          <button class="drawer-tab-btn" data-drawer-tab="notes">Notes</button>
+        </div>
+
+        <div class="drawer-tab-contents">
+          <!-- TIMELINE TAB -->
+          <div class="drawer-tab-pane active" id="pane-timeline">
+            <div class="timeline-container">
+              <div class="add-timeline-event">
+                <input type="text" id="new-timeline-note" class="input-flat" placeholder="Add manual timeline event..." />
+                <button class="btn btn-secondary btn-sm" id="btn-add-timeline-event">Add</button>
+              </div>
+              <div class="timeline-list" id="timeline-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTACTS TAB -->
+          <div class="drawer-tab-pane" id="pane-contacts">
+            <div class="contacts-container">
+              <button class="btn btn-secondary btn-sm" id="btn-add-contact">
+                <i data-lucide="plus"></i> Add HR Contact
+              </button>
+              <div class="contacts-list" id="contacts-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTES TAB -->
+          <div class="drawer-tab-pane" id="pane-notes">
+            <div class="notes-container">
+              <textarea id="edit-notes" class="input-textarea" placeholder="Support markdown here..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Cloud Sync Settings Modal -->
+  <div class="modal-overlay" id="cloud-modal-overlay"></div>
+  <div class="modal-dialog" id="cloud-sync-modal">
+    <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h2 class="heading-lg" style="display: flex; align-items: center; gap: 10px;"><i data-lucide="cloud"></i> Cloud Sync Settings</h2>
+      <button class="btn-icon" id="cloud-modal-close" aria-label="Close settings"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+      <p class="subtitle" style="margin-bottom: 8px;">Connect to your own free database at <strong>supabase.com</strong> to sync across your phone, tablet, and other devices.</p>
+      
+      <div>
+        <label class="field-label" style="display: block; margin-bottom: 6px; font-weight: 500;" for="input-supa-url">Supabase Project URL</label>
+        <input type="url" id="input-supa-url" class="input-flat" placeholder="https://your-project.supabase.co" style="background-color: var(--bg-panel); border: 1px solid var(--border-color);" />
+      </div>
+      
+      <div>
+        <label class="field-label" style="display: block; margin-bottom: 6px; font-weight: 500;" for="input-supa-key">Supabase Anon Public API Key</label>
+        <input type="password" id="input-supa-key" class="input-flat" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="background-color: var(--bg-panel); border: 1px solid var(--border-color);" />
+      </div>
+
+      <div class="sync-status-indicator" id="modal-sync-status" style="margin-top: 4px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+        <span class="activity-status-dot" style="background-color: var(--text-muted); width: 8px; height: 8px; border-radius: 50%; display: inline-block;" id="status-dot"></span>
+        <span id="status-text" class="text-secondary" style="font-weight: 500;">Not connected</span>
+      </div>
+      
+      <div class="sql-guide-toggle-box" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <details>
+          <summary style="font-size: 12px; font-weight: 600; cursor: pointer; color: var(--accent); outline: none;">View Database Schema Setup (SQL)</summary>
+          <p class="subtitle" style="font-size: 11px; margin-top: 8px; margin-bottom: 6px; line-height: 1.4;">Paste and run this query inside your Supabase <strong>SQL Editor</strong> to create tables:</p>
+          <pre style="font-size: 10px; background-color: var(--bg-app); border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius-sm); overflow-x: auto; color: var(--text-secondary); max-height: 120px; line-height: 1.4; font-family: monospace;">
+create table applications (
+  id text primary key,
+  company text not null,
+  role text,
+  stage text,
+  priority integer,
+  source text,
+  location text,
+  salary text,
+  link text,
+  resume text,
+  notes text,
+  contacts jsonb default '[]'::jsonb,
+  timeline jsonb default '[]'::jsonb,
+  lastUpdated text
+);
+
+create table activities (
+  id text primary key,
+  text text,
+  date text
+);
+
+create table resumes (
+  id text primary key,
+  name text,
+  target text,
+  url text
+);
+
+alter table applications disable row level security;
+alter table activities disable row level security;
+alter table resumes disable row level security;</pre>
+        </details>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+      <button class="btn btn-secondary" id="btn-cloud-disconnect" style="margin-right: auto; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);">Disconnect</button>
+      <button class="btn btn-secondary" id="btn-cloud-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-cloud-save">Save & Connect</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('ServiceWorker registered', reg))
+          .catch(err => console.log('ServiceWorker registration failed: ', err));
+      });
+    }
+  </script>
+</body>
+</html>

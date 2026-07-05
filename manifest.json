@@ -1,0 +1,16 @@
+{
+  "short_name": "Oasis",
+  "name": "Oasis Job Application Tracker",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235f5bf6' stroke-width='2'%3E%3Cpath d='M12 2L2 22h20L12 2z'/%3E%3C/svg%3E",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#030303",
+  "theme_color": "#030303",
+  "display": "standalone",
+  "orientation": "portrait"
+}
