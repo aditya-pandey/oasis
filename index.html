@@ -170,8 +170,8 @@
             <div class="board-title-group">
               <h1 class="heading-lg">Applications</h1>
               <div class="view-toggle">
-                <button class="toggle-btn active" data-view="kanban">Kanban</button>
-                <button class="toggle-btn" data-view="list">List</button>
+                <button class="toggle-btn" data-view="kanban">Kanban</button>
+                <button class="toggle-btn active" data-view="list">List</button>
               </div>
             </div>
             <div class="board-actions">
@@ -181,13 +181,13 @@
             </div>
           </div>
 
-          <!-- Kanban View Container -->
-          <div id="kanban-view" class="kanban-board">
+          <!-- Kanban View Container (Hidden by default) -->
+          <div id="kanban-view" class="kanban-board" style="display: none;">
             <!-- Column templates generated dynamically -->
           </div>
 
-          <!-- List View Container (Hidden by default) -->
-          <div id="list-view" class="list-view-container" style="display: none;">
+          <!-- List View Container (Visible by default) -->
+          <div id="list-view" class="list-view-container" style="display: block;">
             <table class="list-table">
               <thead>
                 <tr>
@@ -349,7 +349,13 @@
 
           <div class="field-label">Source</div>
           <div class="field-value">
-            <input type="text" id="edit-source" class="input-flat" placeholder="e.g. LinkedIn" />
+            <select id="edit-source" class="input-select">
+              <option value="">Select Source</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="Naukri">Naukri</option>
+              <option value="Company Website">Company Website</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div class="field-label">Location</div>

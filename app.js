@@ -365,8 +365,8 @@ function setupEventListeners() {
   document.getElementById('btn-new-app').addEventListener('click', () => {
     const newApp = {
       id: 'app-' + Date.now(),
-      company: 'New Company',
-      role: 'Martech Consultant',
+      company: '',
+      role: '',
       stage: state.columns[0] || 'Wishlist',
       priority: 3,
       source: '',
@@ -380,7 +380,7 @@ function setupEventListeners() {
       lastUpdated: new Date().toISOString()
     };
     state.applications.push(newApp);
-    addActivity(`Created Application for ${newApp.company}`);
+    addActivity('Created new blank Application');
     saveState();
     initApp();
     openDrawer(newApp.id);
@@ -806,12 +806,12 @@ function renderBoard(filterQuery = '') {
           ${colApps.map(app => `
             <div class="kanban-card" draggable="true" ondragstart="drag(event, '${app.id}')" onclick="openDrawer('${app.id}')">
               <div class="card-header">
-                <span class="card-company">${app.company}</span>
+                <span class="card-company">${app.company || 'Unnamed Company'}</span>
                 <span class="card-priority">
                   ${'<i data-lucide="star" style="fill: currentColor;"></i>'.repeat(app.priority)}
                 </span>
               </div>
-              <div class="card-role">${app.role}</div>
+              <div class="card-role">${app.role || 'No Role Specified'}</div>
               <div class="card-footer">
                 <span class="card-tag">${app.location || 'Remote'}</span>
                 <span>${new Date(app.lastUpdated).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
@@ -908,8 +908,8 @@ function renderList(filterQuery = '') {
   filteredApps.forEach(app => {
     tbody.innerHTML += `
       <tr onclick="openDrawer('${app.id}')">
-        <td data-label="Company" style="font-weight: 600;">${app.company}</td>
-        <td data-label="Role">${app.role}</td>
+        <td data-label="Company" style="font-weight: 600;">${app.company || 'Unnamed Company'}</td>
+        <td data-label="Role">${app.role || 'No Role Specified'}</td>
         <td data-label="Stage"><span class="badge">${app.stage}</span></td>
         <td data-label="Priority" style="color: var(--warning);">
           ${'★'.repeat(app.priority)}${'☆'.repeat(5 - app.priority)}
@@ -931,9 +931,24 @@ function openDrawer(appId) {
   drawer.setAttribute('data-app-id', appId);
 
   // Bind values
-  document.getElementById('edit-company').value = app.company;
-  document.getElementById('edit-role').value = app.role;
-  document.getElementById('edit-source').value = app.source || '';
+  document.getElementById('edit-company').value = app.company || '';
+  document.getElementById('edit-role').value = app.role || '';
+  
+  // Populate source dropdown supporting legacy custom inputs
+  const sourceSelect = document.getElementById('edit-source');
+  while (sourceSelect.options.length > 5) {
+    sourceSelect.remove(5);
+  }
+  const sourceVal = app.source || '';
+  const standardSources = ['', 'LinkedIn', 'Naukri', 'Company Website', 'Other'];
+  if (sourceVal && !standardSources.includes(sourceVal)) {
+    const opt = document.createElement('option');
+    opt.value = sourceVal;
+    opt.text = sourceVal;
+    sourceSelect.add(opt);
+  }
+  sourceSelect.value = sourceVal;
+
   document.getElementById('edit-location').value = app.location || '';
   document.getElementById('edit-salary').value = app.salary || '';
   document.getElementById('edit-link').value = app.link || '';
