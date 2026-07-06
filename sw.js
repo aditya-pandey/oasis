@@ -1,4 +1,4 @@
-const CACHE_NAME = 'oasis-v5';
+const CACHE_NAME = 'oasis-v6';
 const ASSETS = [
   './',
   './index.html',

@@ -666,8 +666,8 @@ function setupEventListeners() {
   document.getElementById('btn-add-resume').addEventListener('click', () => {
     const newRes = {
       id: 'res-' + Date.now(),
-      name: 'New Resume Version',
-      target: 'Target roles',
+      name: '',
+      target: '',
       url: ''
     };
     state.resumes.push(newRes);
@@ -1414,12 +1414,12 @@ function renderResumes() {
     list.innerHTML += `
       <div class="resume-card">
         <div>
-          <input type="text" class="input-flat" value="${res.name}" onchange="updateResumeField('${res.id}', 'name', this.value)" style="font-weight: 700; font-size: 15px; padding: 4px; border-radius: 4px; width: 100%;" />
+          <input type="text" class="input-flat" value="${res.name}" placeholder="Resume Name (e.g. Martech Consultant CV)" onchange="updateResumeField('${res.id}', 'name', this.value)" style="font-weight: 700; font-size: 15px; padding: 4px; border-radius: 4px; width: 100%;" />
           <div class="resume-card-meta">
             <span class="text-secondary" style="font-weight: 500;">Target:</span>
-            <input type="text" class="input-flat" value="${res.target}" onchange="updateResumeField('${res.id}', 'target', this.value)" style="padding: 2px 4px; width: 180px; border-radius: 4px;" />
+            <input type="text" class="input-flat" value="${res.target}" placeholder="Target Roles (e.g. Martech Manager)" onchange="updateResumeField('${res.id}', 'target', this.value)" style="padding: 2px 4px; width: 180px; border-radius: 4px;" />
             <span class="text-secondary" style="font-weight: 500;">Link:</span>
-            <input type="url" class="input-flat" value="${res.url || ''}" onchange="updateResumeField('${res.id}', 'url', this.value)" placeholder="Google Drive URL or File URL" style="padding: 2px 4px; width: 260px; border-radius: 4px;" />
+            <input type="url" class="input-flat" value="${res.url || ''}" onchange="updateResumeField('${res.id}', 'url', this.value)" placeholder="Google Drive or External URL" style="padding: 2px 4px; width: 260px; border-radius: 4px;" />
             <span class="text-secondary" style="font-weight: 500;">Or File:</span>
             <input type="file" id="file-${res.id}" accept=".pdf,.doc,.docx" onchange="uploadResumeFile('${res.id}', this.files)" style="display: none;" />
             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-${res.id}').click()" style="padding: 4px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;">
