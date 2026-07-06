@@ -400,6 +400,57 @@ function setupEventListeners() {
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
 
+  // Edit Toggle button (View vs Edit mode)
+  document.getElementById('btn-edit-toggle').addEventListener('click', () => {
+    const drawer = document.getElementById('job-drawer');
+    const isEditMode = drawer.classList.toggle('edit-mode');
+    const toggleText = document.getElementById('edit-toggle-text');
+    const toggleIcon = document.getElementById('edit-toggle-icon');
+    
+    if (isEditMode) {
+      // Switched to Edit mode
+      toggleText.innerText = 'Save';
+      toggleIcon.setAttribute('data-lucide', 'check');
+      lucide.createIcons();
+    } else {
+      // Switched back to View mode -> save all values
+      toggleText.innerText = 'Edit';
+      toggleIcon.setAttribute('data-lucide', 'edit-3');
+      
+      const appId = drawer.getAttribute('data-app-id');
+      const app = state.applications.find(a => a.id === appId);
+      if (app) {
+        // Read and save values manually to ensure all updates are synchronized
+        app.company = document.getElementById('edit-company').value.trim();
+        app.role = document.getElementById('edit-role').value.trim();
+        
+        const oldStage = app.stage;
+        const newStage = document.getElementById('edit-stage').value;
+        if (oldStage !== newStage) {
+          app.stage = newStage;
+          app.timeline.unshift({
+            id: 't-' + Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            text: `Moved stage to ${newStage}`
+          });
+          addActivity(`Moved ${app.company || 'Unnamed Company'} to ${newStage}`);
+        }
+        
+        app.source = document.getElementById('edit-source').value;
+        app.location = document.getElementById('edit-location').value.trim();
+        app.salary = document.getElementById('edit-salary').value.trim();
+        app.link = document.getElementById('edit-link').value.trim();
+        app.notes = document.getElementById('edit-notes').value;
+        
+        app.lastUpdated = new Date().toISOString();
+        saveState();
+        
+        // Re-populate view elements in drawer
+        openDrawer(appId);
+      }
+    }
+  });
+
   // Delete App button
   document.getElementById('btn-delete-app').addEventListener('click', async () => {
     const appId = document.getElementById('job-drawer').getAttribute('data-app-id');
@@ -930,7 +981,14 @@ function openDrawer(appId) {
   const drawer = document.getElementById('job-drawer');
   drawer.setAttribute('data-app-id', appId);
 
-  // Bind values
+  // Default to View Mode (non-editable)
+  drawer.classList.remove('edit-mode');
+  const toggleText = document.getElementById('edit-toggle-text');
+  const toggleIcon = document.getElementById('edit-toggle-icon');
+  toggleText.innerText = 'Edit';
+  toggleIcon.setAttribute('data-lucide', 'edit-3');
+
+  // Bind edit fields
   document.getElementById('edit-company').value = app.company || '';
   document.getElementById('edit-role').value = app.role || '';
   
@@ -952,6 +1010,8 @@ function openDrawer(appId) {
   document.getElementById('edit-location').value = app.location || '';
   document.getElementById('edit-salary').value = app.salary || '';
   document.getElementById('edit-link').value = app.link || '';
+  document.getElementById('edit-notes').value = app.notes || '';
+
   // Load resumes dropdown options
   const resumeSelect = document.getElementById('edit-resume');
   resumeSelect.innerHTML = '<option value="">None / Manual Text</option>';
@@ -983,8 +1043,6 @@ function openDrawer(appId) {
     updateResumeLink();
   };
 
-  document.getElementById('edit-notes').value = app.notes || '';
-
   // Load stages list
   const stageSelect = document.getElementById('edit-stage');
   stageSelect.innerHTML = '';
@@ -995,6 +1053,47 @@ function openDrawer(appId) {
     if (col === app.stage) opt.selected = true;
     stageSelect.appendChild(opt);
   });
+
+  // Bind view-only fields
+  document.getElementById('view-company').innerText = app.company || 'Unnamed Company';
+  document.getElementById('view-role').innerText = app.role || 'No Role Specified';
+  document.getElementById('view-stage').innerText = app.stage || 'Wishlist';
+  document.getElementById('view-priority').innerHTML = '★'.repeat(app.priority) + '☆'.repeat(5 - app.priority);
+  document.getElementById('view-source').innerText = app.source || '—';
+  document.getElementById('view-location').innerText = app.location || '—';
+  document.getElementById('view-salary').innerText = app.salary || '—';
+
+  // View link
+  const viewLinkEl = document.getElementById('view-link');
+  const viewLinkPlaceholderEl = document.getElementById('view-link-placeholder');
+  if (app.link) {
+    viewLinkEl.href = app.link;
+    viewLinkEl.style.display = 'inline-flex';
+    viewLinkPlaceholderEl.style.display = 'none';
+  } else {
+    viewLinkEl.style.display = 'none';
+    viewLinkPlaceholderEl.style.display = 'inline';
+  }
+
+  // View resume
+  const viewResumeSpan = document.getElementById('view-resume');
+  const viewResumeLinkEl = document.getElementById('view-link-view-resume');
+  const selectedResume = state.resumes.find(r => r.id === app.resume || r.name === app.resume);
+  if (selectedResume) {
+    viewResumeSpan.innerText = selectedResume.name;
+    if (selectedResume.url) {
+      viewResumeLinkEl.href = selectedResume.url;
+      viewResumeLinkEl.style.display = 'inline-flex';
+    } else {
+      viewResumeLinkEl.style.display = 'none';
+    }
+  } else {
+    viewResumeSpan.innerText = app.resume || 'None';
+    viewResumeLinkEl.style.display = 'none';
+  }
+
+  // View notes
+  document.getElementById('view-notes').innerText = app.notes || 'No notes added.';
 
   updateStars(app.priority);
   renderDrawerTimeline(app);

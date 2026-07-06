@@ -314,7 +314,10 @@
         <button class="btn-minimal" id="drawer-close" aria-label="Close details">
           <i data-lucide="x"></i>
         </button>
-        <div class="drawer-actions">
+        <div class="drawer-actions" style="display: flex; gap: 12px; align-items: center;">
+          <button class="btn-minimal" id="btn-edit-toggle" style="font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+            <i data-lucide="edit-3" id="edit-toggle-icon" style="width: 14px; height: 14px;"></i> <span id="edit-toggle-text">Edit</span>
+          </button>
           <button class="btn-minimal danger" id="btn-delete-app" style="font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete
           </button>
@@ -324,69 +327,130 @@
       <div class="drawer-body" id="drawer-content">
         <!-- Inside drawer, interactive elements edit states dynamically (autosave) -->
         <div class="drawer-section main-info">
-          <input type="text" id="edit-company" class="input-flat company-title" placeholder="Company Name" />
-          <input type="text" id="edit-role" class="input-flat role-title" placeholder="Software Engineer" />
+          <!-- View Only Headers -->
+          <div class="view-only">
+            <h2 id="view-company" class="company-title" style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; border: none; padding: 0;"></h2>
+            <div id="view-role" class="role-title" style="font-size: 14px; color: var(--text-secondary); border: none; padding: 0;"></div>
+          </div>
+          <!-- Edit Only Inputs -->
+          <div class="edit-only" style="display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="edit-company" class="input-flat company-title" placeholder="Company Name" />
+            <input type="text" id="edit-role" class="input-flat role-title" placeholder="Software Engineer" />
+          </div>
         </div>
 
         <div class="drawer-fields-grid">
           <div class="field-label">Stage</div>
           <div class="field-value">
-            <select id="edit-stage" class="input-select">
-              <!-- Dynamically populated stages -->
-            </select>
+            <div class="view-only">
+              <span id="view-stage" class="badge"></span>
+            </div>
+            <div class="edit-only">
+              <select id="edit-stage" class="input-select">
+                <!-- Dynamically populated stages -->
+              </select>
+            </div>
           </div>
 
           <div class="field-label">Priority</div>
           <div class="field-value">
-            <div class="rating-stars" id="edit-priority">
-              <span data-star="1"><i data-lucide="star"></i></span>
-              <span data-star="2"><i data-lucide="star"></i></span>
-              <span data-star="3"><i data-lucide="star"></i></span>
-              <span data-star="4"><i data-lucide="star"></i></span>
-              <span data-star="5"><i data-lucide="star"></i></span>
+            <div class="view-only">
+              <div id="view-priority" style="color: var(--warning); display: flex; gap: 2px;"></div>
+            </div>
+            <div class="edit-only">
+              <div class="rating-stars" id="edit-priority">
+                <span data-star="1"><i data-lucide="star"></i></span>
+                <span data-star="2"><i data-lucide="star"></i></span>
+                <span data-star="3"><i data-lucide="star"></i></span>
+                <span data-star="4"><i data-lucide="star"></i></span>
+                <span data-star="5"><i data-lucide="star"></i></span>
+              </div>
             </div>
           </div>
 
           <div class="field-label">Source</div>
           <div class="field-value">
-            <select id="edit-source" class="input-select">
-              <option value="">Select Source</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Naukri">Naukri</option>
-              <option value="Company Website">Company Website</option>
-              <option value="Other">Other</option>
-            </select>
+            <div class="view-only">
+              <span id="view-source" style="font-weight: 500;"></span>
+            </div>
+            <div class="edit-only">
+              <select id="edit-source" class="input-select">
+                <option value="">Select Source</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Naukri">Naukri</option>
+                <option value="Company Website">Company Website</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
 
           <div class="field-label">Location</div>
           <div class="field-value">
-            <input type="text" id="edit-location" class="input-flat" placeholder="Remote, New York, etc." />
+            <div class="view-only">
+              <span id="view-location" style="font-weight: 500;"></span>
+            </div>
+            <div class="edit-only">
+              <input type="text" id="edit-location" class="input-flat" placeholder="Remote, New York, etc." />
+            </div>
           </div>
 
           <div class="field-label">Salary</div>
           <div class="field-value">
-            <input type="text" id="edit-salary" class="input-flat" placeholder="e.g. 20 LPA, $120k" />
+            <div class="view-only">
+              <span id="view-salary" style="font-weight: 500; font-family: monospace;"></span>
+            </div>
+            <div class="edit-only">
+              <input type="text" id="edit-salary" class="input-flat" placeholder="e.g. 20 LPA, $120k" />
+            </div>
           </div>
 
           <div class="field-label">Job Link</div>
           <div class="field-value">
-            <input type="url" id="edit-link" class="input-flat" placeholder="https://..." />
+            <div class="view-only">
+              <a href="#" id="view-link" target="_blank" class="link-styled" style="display: none; align-items: center; gap: 4px; font-weight: 500; color: var(--accent); text-decoration: none;">
+                Open Listing <i data-lucide="external-link" style="width: 12px; height: 12px; margin-top: 1px;"></i>
+              </a>
+              <span id="view-link-placeholder" class="text-muted" style="color: var(--text-muted);">—</span>
+            </div>
+            <div class="edit-only">
+              <input type="url" id="edit-link" class="input-flat" placeholder="https://..." />
+            </div>
           </div>
 
           <div class="field-label">Resume Used</div>
-          <div class="field-value" style="display: flex; gap: 8px; align-items: center;">
-            <select id="edit-resume" class="input-select">
-              <!-- Dynamically populated options -->
-            </select>
-            <a href="#" id="link-view-resume" target="_blank" class="btn btn-secondary btn-icon" title="Open Resume Link" style="display: none; padding: 6px; flex-shrink: 0; align-items: center; justify-content: center;">
-              <i data-lucide="external-link" style="width: 14px; height: 14px; margin-top: 2px;"></i>
-            </a>
+          <div class="field-value">
+            <div class="view-only" style="display: flex; gap: 8px; align-items: center;">
+              <span id="view-resume" style="font-weight: 500;"></span>
+              <a href="#" id="view-link-view-resume" target="_blank" class="btn btn-secondary btn-icon" title="Open Resume Link" style="display: none; padding: 6px; flex-shrink: 0; align-items: center; justify-content: center; height: 26px; width: 26px; border-radius: var(--border-radius-sm);">
+                <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
+              </a>
+            </div>
+            <div class="edit-only" style="display: flex; gap: 8px; align-items: center;">
+              <select id="edit-resume" class="input-select">
+                <!-- Dynamically populated options -->
+              </select>
+              <a href="#" id="link-view-resume" target="_blank" class="btn btn-secondary btn-icon" title="Open Resume Link" style="display: none; padding: 6px; flex-shrink: 0; align-items: center; justify-content: center;">
+                <i data-lucide="external-link" style="width: 14px; height: 14px; margin-top: 2px;"></i>
+              </a>
+            </div>
           </div>
         </div>
 
-        <div class="drawer-tabs">
+        <!-- TOP SHELF: HR CONTACTS (Editable on top shelf) -->
+        <div class="drawer-section hr-contacts-shelf" style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h3 class="heading-sm" style="display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-display); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);"><i data-lucide="users" style="width: 15px; height: 15px; color: var(--accent);"></i> HR Contacts</h3>
+            <button class="btn btn-secondary btn-sm edit-only" id="btn-add-contact" style="padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+              <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Add Contact
+            </button>
+          </div>
+          <div class="contacts-list" id="contacts-list" style="margin-top: 8px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="drawer-tabs" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
           <button class="drawer-tab-btn active" data-drawer-tab="timeline">Timeline</button>
-          <button class="drawer-tab-btn" data-drawer-tab="contacts">HR Contacts</button>
           <button class="drawer-tab-btn" data-drawer-tab="notes">Notes</button>
         </div>
 
@@ -394,7 +458,7 @@
           <!-- TIMELINE TAB -->
           <div class="drawer-tab-pane active" id="pane-timeline">
             <div class="timeline-container">
-              <div class="add-timeline-event">
+              <div class="add-timeline-event edit-only" style="margin-bottom: 16px;">
                 <input type="text" id="new-timeline-note" class="input-flat" placeholder="Add manual timeline event..." />
                 <button class="btn btn-secondary btn-sm" id="btn-add-timeline-event">Add</button>
               </div>
@@ -404,22 +468,15 @@
             </div>
           </div>
 
-          <!-- CONTACTS TAB -->
-          <div class="drawer-tab-pane" id="pane-contacts">
-            <div class="contacts-container">
-              <button class="btn btn-secondary btn-sm" id="btn-add-contact">
-                <i data-lucide="plus"></i> Add HR Contact
-              </button>
-              <div class="contacts-list" id="contacts-list">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-          </div>
-
           <!-- NOTES TAB -->
           <div class="drawer-tab-pane" id="pane-notes">
             <div class="notes-container">
-              <textarea id="edit-notes" class="input-textarea" placeholder="Support markdown here..."></textarea>
+              <div class="view-only" id="view-notes" style="font-size: 13px; line-height: 1.5; color: var(--text-secondary); white-space: pre-wrap; min-height: 80px; padding: 12px; background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm);"></div>
+              <div class="edit-only">
+                <textarea id="edit-notes" class="input-textarea" placeholder="Support markdown here..."></textarea>
+              </div>
+            </div>
+          </div>
             </div>
           </div>
         </div>

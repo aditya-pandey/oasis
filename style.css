@@ -1648,6 +1648,23 @@ body {
 .focus-item:active {
   transform: scale(0.95) !important;
 }
+/* View Mode / Edit Mode Visibility Helpers */
+.drawer:not(.edit-mode) .edit-only {
+  display: none !important;
+}
 
+.drawer.edit-mode .view-only {
+  display: none !important;
+}
 
+.link-styled {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
 
+.link-styled:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
