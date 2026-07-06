@@ -566,6 +566,26 @@ alter table resumes disable row level security;</pre>
     </div>
   </div>
 
+  <!-- Add New Application Modal (Quick Parse / Blank) -->
+  <div class="modal-overlay" id="new-app-modal-overlay"></div>
+  <div class="modal-dialog" id="new-app-modal" style="max-width: 500px;">
+    <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+      <h2 class="heading-lg" style="display: flex; align-items: center; gap: 10px;"><i data-lucide="plus-circle"></i> Add New Application</h2>
+      <button class="btn-icon" id="new-app-modal-close" aria-label="Close dialog"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+      <p class="subtitle" style="margin-bottom: 4px;">Paste the raw job description, posting text, or notes below. Gemini will automatically extract and populate all details.</p>
+      <textarea id="input-job-text" class="input-textarea" placeholder="Paste job listing text, description, or URL details here..." style="min-height: 140px; background-color: var(--bg-panel); border: 1px solid var(--border-color); color: var(--text-primary); font-family: inherit; font-size: 13px; border-radius: var(--border-radius-sm); padding: 12px; resize: vertical;"></textarea>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+      <button class="btn btn-secondary" id="btn-new-app-blank" style="margin-right: auto;">Start Blank</button>
+      <button class="btn btn-secondary" id="btn-new-app-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-new-app-parse" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Parse Text
+      </button>
+    </div>
+  </div>
+
   <!-- Mobile Settings Modal -->
   <div class="modal-overlay" id="mobile-settings-overlay"></div>
   <div class="modal-dialog" id="mobile-settings-modal">

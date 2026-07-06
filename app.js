@@ -365,8 +365,24 @@ function setupEventListeners() {
     });
   });
 
-  // New Application
+  // New Application Modal Triggers
   document.getElementById('btn-new-app').addEventListener('click', () => {
+    document.getElementById('input-job-text').value = '';
+    document.getElementById('new-app-modal-overlay').classList.add('active');
+    document.getElementById('new-app-modal').classList.add('active');
+  });
+
+  const closeNewAppModal = () => {
+    document.getElementById('new-app-modal-overlay').classList.remove('active');
+    document.getElementById('new-app-modal').classList.remove('active');
+  };
+
+  document.getElementById('new-app-modal-close').addEventListener('click', closeNewAppModal);
+  document.getElementById('new-app-modal-overlay').addEventListener('click', closeNewAppModal);
+  document.getElementById('btn-new-app-cancel').addEventListener('click', closeNewAppModal);
+
+  document.getElementById('btn-new-app-blank').addEventListener('click', () => {
+    closeNewAppModal();
     const newApp = {
       id: 'app-' + Date.now(),
       company: '',
@@ -387,7 +403,17 @@ function setupEventListeners() {
     addActivity('Created new blank Application');
     saveState();
     initApp();
-    openDrawer(newApp.id);
+    openDrawer(newApp.id, true); // Opens directly in Edit Mode!
+  });
+
+  document.getElementById('btn-new-app-parse').addEventListener('click', () => {
+    const textVal = document.getElementById('input-job-text').value.trim();
+    if (!textVal) {
+      alert('Please paste some job posting text first.');
+      return;
+    }
+    closeNewAppModal();
+    parseJobText(textVal);
   });
 
   // Add Column / Stage
@@ -1029,19 +1055,25 @@ function renderList(filterQuery = '') {
 }
 
 // Drawer: Open details side drawer
-function openDrawer(appId) {
+function openDrawer(appId, forceEditMode = false) {
   const app = state.applications.find(a => a.id === appId);
   if (!app) return;
 
   const drawer = document.getElementById('job-drawer');
   drawer.setAttribute('data-app-id', appId);
 
-  // Default to View Mode (non-editable)
-  drawer.classList.remove('edit-mode');
   const toggleText = document.getElementById('edit-toggle-text');
   const toggleIcon = document.getElementById('edit-toggle-icon');
-  toggleText.innerText = 'Edit';
-  toggleIcon.setAttribute('data-lucide', 'edit-3');
+
+  if (forceEditMode) {
+    drawer.classList.add('edit-mode');
+    toggleText.innerText = 'Save';
+    toggleIcon.setAttribute('data-lucide', 'check');
+  } else {
+    drawer.classList.remove('edit-mode');
+    toggleText.innerText = 'Edit';
+    toggleIcon.setAttribute('data-lucide', 'edit-3');
+  }
 
   // Bind edit fields
   document.getElementById('edit-company').value = app.company || '';
@@ -1677,6 +1709,102 @@ async function parseScreenshotWithGemini(base64Data, mimeType, apiKey) {
   }
 
   // Clean raw JSON response
+  let cleanedText = textResponse.trim();
+  if (cleanedText.startsWith('```')) {
+    cleanedText = cleanedText.replace(/^```json/, '').replace(/^```/, '').trim();
+  }
+
+  try {
+    return JSON.parse(cleanedText);
+  } catch (e) {
+    console.error('Failed to parse JSON returned from Gemini:', cleanedText);
+    throw new Error('Gemini did not return structured JSON.');
+  }
+}
+
+// Parse Job Text helper and REST call
+async function parseJobText(rawText) {
+  const overlay = document.getElementById('ocr-loading-overlay');
+  const loadingText = document.getElementById('ocr-loading-text');
+  if (!overlay) return;
+
+  const geminiKey = localStorage.getItem('oasis_gemini_key') || '';
+  if (!geminiKey) {
+    alert('Please enter your Gemini API Key in the settings menu to use this feature.');
+    return;
+  }
+
+  // Show loading overlay
+  if (loadingText) loadingText.innerText = 'Gemini is parsing job description details...';
+  overlay.style.display = 'flex';
+
+  try {
+    const parsedData = await parseJobTextWithGemini(rawText, geminiKey);
+    
+    if (parsedData) {
+      const newApp = {
+        id: 'app-' + Date.now(),
+        company: parsedData.company || '',
+        role: parsedData.role || '',
+        stage: parsedData.stage || state.columns[0] || 'Wishlist',
+        priority: parseInt(parsedData.priority) || 3,
+        source: parsedData.source || '',
+        location: parsedData.location || '',
+        salary: parsedData.salary || '',
+        link: parsedData.link || '',
+        resume: '',
+        notes: parsedData.notes || 'Automatically parsed from job description text.',
+        contacts: [],
+        timeline: [{ id: 't-' + Date.now(), date: new Date().toISOString().split('T')[0], text: 'Created application via text parse' }],
+        lastUpdated: new Date().toISOString()
+      };
+      state.applications.push(newApp);
+      addActivity(`Created Application for ${newApp.company || 'Unnamed Company'} via job text`);
+      saveState();
+      initApp();
+      openDrawer(newApp.id); // Open in view mode so user can review the parsed details!
+    }
+  } catch (err) {
+    console.error('Gemini job text parse failed:', err);
+    alert('Failed to parse text: ' + err.message);
+  } finally {
+    overlay.style.display = 'none';
+    if (loadingText) loadingText.innerText = 'Gemini is parsing screenshot details...';
+  }
+}
+
+async function parseJobTextWithGemini(rawText, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  
+  const prompt = `Analyze this job posting description or application notes text. Extract the following details as a raw JSON object (do not wrap in markdown or backticks): { "company": "", "role": "", "stage": "", "priority": 3, "source": "", "location": "", "salary": "", "link": "", "notes": "" }. If a field is not found, leave it as an empty string. The "stage" field must match one of these exact stages: "${state.columns.join('", "')}". If no stage fits, default to "${state.columns[0] || 'Wishlist'}". The "source" field must match one of these exact values: "LinkedIn", "Naukri", "Company Website", "Other" or be blank. If a website URL or link is present in the text, extract it to the "link" field. Summarize key responsibilities or requirements briefly in the "notes" field. Here is the text:\n\n${rawText}`;
+
+  const payload = {
+    contents: [
+      {
+        parts: [
+          { text: prompt }
+        ]
+      }
+    ]
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error?.message || `HTTP ${response.status}`);
+  }
+
+  const result = await response.json();
+  const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!textResponse) {
+    throw new Error('Gemini API returned an empty response.');
+  }
+
   let cleanedText = textResponse.trim();
   if (cleanedText.startsWith('```')) {
     cleanedText = cleanedText.replace(/^```json/, '').replace(/^```/, '').trim();
