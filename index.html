@@ -174,7 +174,11 @@
                 <button class="toggle-btn active" data-view="list">List</button>
               </div>
             </div>
-            <div class="board-actions">
+            <div class="board-actions" style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn btn-secondary" id="btn-upload-screenshot" title="Paste screenshot (Cmd+V) or upload one to parse details" style="gap: 6px;">
+                <i data-lucide="image"></i> <span>Parse Screenshot</span>
+              </button>
+              <input type="file" id="screenshot-file" accept="image/*" style="display: none;" />
               <button class="btn btn-secondary" id="btn-add-column">
                 <i data-lucide="plus-circle"></i> Add Stage
               </button>
@@ -504,6 +508,11 @@
         <input type="password" id="input-supa-key" class="input-flat" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="background-color: var(--bg-panel); border: 1px solid var(--border-color);" />
       </div>
 
+      <div>
+        <label class="field-label" style="display: block; margin-bottom: 6px; font-weight: 500;" for="input-gemini-key">Gemini API Key</label>
+        <input type="password" id="input-gemini-key" class="input-flat" placeholder="AIzaSy..." style="background-color: var(--bg-panel); border: 1px solid var(--border-color);" />
+      </div>
+
       <div class="sync-status-indicator" id="modal-sync-status" style="margin-top: 4px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
         <span class="activity-status-dot" style="background-color: var(--text-muted); width: 8px; height: 8px; border-radius: 50%; display: inline-block;" id="status-dot"></span>
         <span id="status-text" class="text-secondary" style="font-weight: 500;">Not connected</span>
@@ -577,6 +586,19 @@ alter table resumes disable row level security;</pre>
       <button class="btn btn-secondary" id="mobile-import-btn" style="width: 100%; justify-content: flex-start; gap: 12px; padding: 12px 16px;">
         <i data-lucide="upload"></i> Import Backup
       </button>
+      
+      <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
+        <label class="field-label" style="display: block; margin-bottom: 6px; font-weight: 500;" for="input-mobile-gemini-key">Gemini API Key</label>
+        <input type="password" id="input-mobile-gemini-key" class="input-flat" placeholder="AIzaSy..." style="background-color: var(--bg-panel); border: 1px solid var(--border-color);" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Glassmorphic OCR/Gemini Parsing Loading Overlay -->
+  <div id="ocr-loading-overlay" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000; background-color: rgba(3, 3, 3, 0.75); backdrop-filter: blur(8px);">
+    <div style="text-align: center; color: var(--text-primary); display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <div class="ocr-spinner" style="width: 48px; height: 48px; border: 3px solid rgba(95, 91, 246, 0.1); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s linear infinite;"></div>
+      <p style="font-family: var(--font-display); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; margin: 0;" id="ocr-loading-text">Gemini is parsing screenshot details...</p>
     </div>
   </div>
 

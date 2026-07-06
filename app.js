@@ -218,6 +218,10 @@ async function syncWithCloud() {
 
 // DOM Elements & Setup
 document.addEventListener('DOMContentLoaded', () => {
+  // Pre-populate Gemini API key if not already set
+  if (!localStorage.getItem('oasis_gemini_key')) {
+    localStorage.setItem('oasis_gemini_key', 'AIzaSyBw7QbzhZgbQX7-xdiYq0k6DjXXSL61b4w');
+  }
   loadState();
   initSupabase();
   setupEventListeners();
@@ -708,6 +712,57 @@ function setupEventListeners() {
   document.getElementById('mobile-import-btn').addEventListener('click', () => {
     closeMobileSettings();
     document.getElementById('import-btn').click();
+  });
+
+  // Gemini API Key sync settings listeners
+  const geminiInput = document.getElementById('input-gemini-key');
+  const mobileGeminiInput = document.getElementById('input-mobile-gemini-key');
+  const savedGeminiKey = localStorage.getItem('oasis_gemini_key') || '';
+  
+  if (geminiInput) geminiInput.value = savedGeminiKey;
+  if (mobileGeminiInput) mobileGeminiInput.value = savedGeminiKey;
+
+  const syncGeminiKey = (val) => {
+    localStorage.setItem('oasis_gemini_key', val);
+    if (geminiInput) geminiInput.value = val;
+    if (mobileGeminiInput) mobileGeminiInput.value = val;
+  };
+
+  geminiInput?.addEventListener('input', (e) => syncGeminiKey(e.target.value));
+  mobileGeminiInput?.addEventListener('input', (e) => syncGeminiKey(e.target.value));
+
+  // Parse Screenshot Event Listeners
+  const uploadScreenshotBtn = document.getElementById('btn-upload-screenshot');
+  const screenshotFileInput = document.getElementById('screenshot-file');
+
+  uploadScreenshotBtn?.addEventListener('click', () => {
+    screenshotFileInput.click();
+  });
+
+  screenshotFileInput?.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      parseImageFile(e.target.files[0]);
+      // Reset input value so same file can be uploaded again
+      screenshotFileInput.value = '';
+    }
+  });
+
+  // Clipboard Paste Image Listener
+  document.addEventListener('paste', (e) => {
+    // Only capture pastes if we are in the applications tab
+    const activeTab = state.activeTab || 'dashboard';
+    if (activeTab !== 'applications') return;
+
+    const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        parseImageFile(blob);
+        break;
+      }
+    }
   });
 }
 
@@ -1526,5 +1581,113 @@ window.deleteResume = function(resId) {
     renderResumes();
   }
 };
+
+// Parse Screenshot helper and REST call
+async function parseImageFile(file) {
+  const overlay = document.getElementById('ocr-loading-overlay');
+  if (!overlay) return;
+
+  const geminiKey = localStorage.getItem('oasis_gemini_key') || '';
+  if (!geminiKey) {
+    alert('Please enter your Gemini API Key in the settings menu to use this feature.');
+    return;
+  }
+
+  // Read file as base64 data
+  const reader = new FileReader();
+  reader.onload = async () => {
+    // Show glassmorphic loading screen
+    overlay.style.display = 'flex';
+    
+    try {
+      const dataUrl = reader.result;
+      const base64Data = dataUrl.split(',')[1];
+      const parsedData = await parseScreenshotWithGemini(base64Data, file.type, geminiKey);
+      
+      if (parsedData) {
+        // Create new application card
+        const newApp = {
+          id: 'app-' + Date.now(),
+          company: parsedData.company || '',
+          role: parsedData.role || '',
+          stage: parsedData.stage || state.columns[0] || 'Wishlist',
+          priority: parseInt(parsedData.priority) || 3,
+          source: parsedData.source || '',
+          location: parsedData.location || '',
+          salary: parsedData.salary || '',
+          link: parsedData.link || '',
+          resume: '',
+          notes: parsedData.notes || 'Automatically parsed from screenshot.',
+          contacts: [],
+          timeline: [{ id: 't-' + Date.now(), date: new Date().toISOString().split('T')[0], text: 'Created application via screenshot parse' }],
+          lastUpdated: new Date().toISOString()
+        };
+        state.applications.push(newApp);
+        addActivity(`Created Application for ${newApp.company || 'Unnamed Company'} via screenshot`);
+        saveState();
+        initApp();
+        openDrawer(newApp.id);
+      }
+    } catch (err) {
+      console.error('Gemini screenshot parse failed:', err);
+      alert('Failed to parse screenshot: ' + err.message);
+    } finally {
+      overlay.style.display = 'none';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function parseScreenshotWithGemini(base64Data, mimeType, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  
+  const prompt = `Analyze this job application confirmation screenshot. Extract the following details as a raw JSON object (do not wrap in markdown or backticks): { "company": "", "role": "", "stage": "", "priority": 3, "source": "", "location": "", "salary": "", "link": "", "notes": "" }. If a field is not found, leave it as an empty string. The "stage" field must match one of these exact stages: "${state.columns.join('", "')}". If no stage fits, default to "${state.columns[0] || 'Wishlist'}". The "source" field must match one of these exact values: "LinkedIn", "Naukri", "Company Website", "Other" or be blank.`;
+
+  const payload = {
+    contents: [
+      {
+        parts: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: mimeType || 'image/png',
+              data: base64Data
+            }
+          }
+        ]
+      }
+    ]
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error?.message || `HTTP ${response.status}`);
+  }
+
+  const result = await response.json();
+  const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!textResponse) {
+    throw new Error('Gemini API returned an empty response.');
+  }
+
+  // Clean raw JSON response
+  let cleanedText = textResponse.trim();
+  if (cleanedText.startsWith('```')) {
+    cleanedText = cleanedText.replace(/^```json/, '').replace(/^```/, '').trim();
+  }
+
+  try {
+    return JSON.parse(cleanedText);
+  } catch (e) {
+    console.error('Failed to parse JSON returned from Gemini:', cleanedText);
+    throw new Error('Gemini did not return structured JSON.');
+  }
+}
 
 
